@@ -1,43 +1,62 @@
 <template>
-  <div id="wrapper">
-    <main class="container">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <main>
+        <!-- <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="col-8">
-                <router-link class="col-3" to="/">Настройки</router-link>
-                <router-link class="col-3" to="/table">Таблица</router-link>
+                
                 <div class="col-3"></div>
             </div>
             <span @click="clear" class="col-4">Загрузить файл</span>
-        </nav>
-        <div class="d-flex flex-row bd-highlight justify-content-between mt-3 mb-3">
-            <b-button v-on:click="loadTeams" variant="primary">Добавить команду</b-button>
-                <div class="row">
-                    <label for="questions-count" class="mt-auto">Количество вопросов:</label>
-                    <b-form-input class="col-2 ml-3" id="questions-count" type='number'></b-form-input>
-                </div>
+        </nav> -->
+        
+          <div class="row valign-wrapper action-wrapper">
+            <!-- <button v-on:click="loadTeams" variant="primary">Добавить команду</button> -->
+            <div class="col s4"><button class="waves-effect waves-light btn">Загрузить файл</button></div>
+            <div class="col s2 offset-s4 q-count">
+              <input :value="questionCount" id="questions-count" max="100" min="0" type="number" class="validate col s4">
+              <label class="active col s12" for="questions-count">Количество вопросов</label>
+            </div>
+            <div class="col s2"><button @click="this.generate" class="waves-effect red darken-4 btn">Сформировать</button></div>
             </div>
             <div>
-                <b-list-group>
-                    <b-row v-for="team in teams" :key="team.id"><div class="col-2">{{team.id}}</div><div class="col-8"><b-form-input class="col-8 ml-3" :value=team.name id="questions-count" type='text'></b-form-input></div><div @click="deleteTeam(team)">close</div></b-row>
-                </b-list-group>
+                <ul class="collection">
+                    <li class="collection-item row valign-wrapper" v-for="team in teams" :key="team.id">
+                      <div class="col s1 center-align">{{team.id}}</div>
+                      <div class="col s10">
+                        <input :value="team.name" :id="team.num" @input="updateTeam" class="" placeholder="Введите название команды" type='text' />
+                      </div>
+                      <div class="col s1 delete-team" @click="deleteTeam(team)"><i class="Small material-icons">delete</i></div></li>
+                </ul>
+              <a @click="this.addTeam" class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></a>
             </div>
     </main>
-  </div>
 </template>
 <script>
   import {mapState, mapActions} from 'vuex'
   export default {
     name: 'Settings',
     components: {},
-    computed: mapState(['teams']),
+    computed: mapState(['teams', 'questionCount']),
     methods: {
-      ...mapActions(['addTeam', 'clear', 'remove']),
-      loadTeams () {
-        this.addTeam()
-      },
+      ...mapActions(['addTeam', 'clear', 'remove', 'update', 'questionCountSet']),
       deleteTeam (team) {
         this.remove(team)
+      },
+      updateTeam (e) {
+        console.log(e.target.value)
+        this.update({num: e.target.id, name: e.target.value})
+      },
+      generate () {
       }
     }
   }
 </script>
+<style>
+  /* CSS */
+  .q-count * {
+    padding: 0 !important;
+  }
+  .material-icons {
+    cursor: pointer;
+  }
+
+</style>
