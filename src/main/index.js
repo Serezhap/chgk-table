@@ -29,7 +29,6 @@ function createWindow () {
   })
 
   mainWindow.loadURL(winURL)
-
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -43,7 +42,6 @@ app.on('window-all-closed', () => {
     console.log(store)
   }
 })
-
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
