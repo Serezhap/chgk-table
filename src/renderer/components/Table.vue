@@ -25,8 +25,8 @@
                   <td class="team_name truncate">{{team.name}}</td>
                   <td :title="team.name + ' ' + 'вопрос ' + question" class="question" v-for="question in QUESTION_COUNT" :key="question" @click="toggleAnswer(team, question)"><span>{{team.answers.includes(question) ? '+' : '-'}}</span></td>
                   <td class="sum">{{team.answers.length}}</td>
-                  <td class="rate">1488</td>
-                  <td class="pos">1</td>
+                  <td class="rate">{{TEAM_RATING(team.answers)}}</td>
+                  <td class="pos">{{RANK(team.num)}}</td>
                 </tr>
               </tbody>
             </table>
@@ -40,9 +40,9 @@
   export default {
     name: 'Table',
     components: { },
-    computed: mapGetters(['GET_TEAMS', 'QUESTION_COUNT']),
+    computed: mapGetters(['GET_TEAMS', 'QUESTION_COUNT', 'RATING', 'TEAM_RATING', 'RANK']),
     methods: {
-      ...mapActions(['TOGGLE_ANSWER']),
+      ...mapActions(['TOGGLE_ANSWER', 'SET_RATING']),
       toggleAnswer (team, question) {
         this.TOGGLE_ANSWER({num: team.num, question: question})
       }
@@ -82,6 +82,9 @@ thead th {
 .question {
   width: 30px;
   text-align: center;
+  cursor: pointer;
+  border-right: 1px solid #ccc;
+  border-left: 1px solid #ccc;
 }
 .question:nth-child(3) {
   padding-left: 240px;
@@ -89,6 +92,7 @@ thead th {
 .sum, .rate, .pos {
   width: 80px;
   font-weight: 600;
+  text-align: center;
 }
 table {
   width: auto !important;
