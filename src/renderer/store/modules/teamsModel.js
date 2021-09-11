@@ -1,6 +1,7 @@
 export default {
   state: {
-    teams: []
+    teams: [],
+    order: 'default'
   },
   actions: {
     ADD_TEAM: ({commit}) => {
@@ -15,11 +16,15 @@ export default {
     TOGGLE_ANSWER: ({commit, getters}, {num, question}) => {
       commit('TOGGLE_ANSWER', {num, question})
       commit('SET_RATING', {question, rating: getters.RATING(question)})
+      commit('SET_TEAM_RATING', getters)
+      commit('SET_TEAM_RANK')
+    },
+    SET_ORDER: ({commit}, order) => {
+      commit('SET_ORDER', order)
     }
   },
   mutations: {
     ADD_TEAM: state => {
-      console.log(state)
       state.teams.push({num: Date.now(), id: state.teams.length + 1, name: '', answers: []})
     },
     REMOVE_TEAM (state, num) {
@@ -52,43 +57,116 @@ export default {
       })
       state.teams = teams
     },
-    RESET_ANSWERS: (state, count) => {
-      state.teams.forEach(team => {
-        team.answers = team.answers.filter(answer => answer <= count)
+    SET_TEAM_RATING: (state, getters) => {
+      let teams = state.teams
+      let questions = getters.GET_QUESTIONS
+      teams.forEach(team => {
+        if (team.answers.length === 0) team.rating = 0
+        team.rating = 0
+        team.answers.forEach(answer => {
+          team.rating += questions[answer - 1].rating
+        })
       })
-    }
-  },
-  getters: {
-    GET_TEAMS: state => {
-      return state.teams
+      state.teams = teams
     },
-    RATING: (state) => (question) => {
-      return state.teams.length - state.teams.filter(team => team.answers.includes(question)).length + 1
-    },
-    RANK: (state, rootGetters) => num => {
-      const teams = [...state.teams].sort((a, b) => {
-        console.log(rootGetters.RATING(a))
+    SET_TEAM_RANK: (state) => {
+      let teams = state.teams.slice()
+      teams.sort((a, b) => {
         if (a.answers.length > b.answers.length) {
           return -1
         }
         if (a.answers.length < b.answers.length) {
           return 1
         }
-        console.log(a.answers)
-        console.log(b.answers)
-        let aRate = rootGetters.TEAM_RATING(a.answers)
-        let bRate = rootGetters.TEAM_RATING(b.answers)
-        console.log('sas' + aRate)
-        console.log(bRate)
-        if (aRate > bRate) {
+        if (a.rating > b.rating) {
           return -1
         }
-        if (aRate < bRate) {
+        if (a.rating < b.rating) {
           return 1
         }
         return 0
       })
-      return teams.findIndex(team => team.num === num) + 1
+      let fr = 0
+      let lr = 0
+      for (let i = 0; i < teams.length; i++) {
+        teams[i].rank = i + 1
+        teams[i].lastrank = null
+        if (i < teams.length - 1) {
+          if (teams[i].answers.length === teams[i + 1].answers.length && teams[i].rating === teams[i + 1].rating) {
+            if (fr === 0) {
+              fr = i + 1
+              lr = i + 2
+            } else {
+              lr = i + 2
+            }
+          } else {
+            if (fr !== 0) {
+              let end = lr
+              for (let j = fr - 1; j < end; j++) {
+                teams[j].lastrank = lr
+                teams[j].rank = fr
+                if (j === end - 1) {
+                  fr = 0
+                  lr = 0
+                }
+              }
+            }
+          }
+        } else {
+          teams[i].rank = i + 1
+          teams[i].lastrank = null
+          if (fr !== 0) {
+            let end = lr
+            for (let j = fr - 1; j < end; j++) {
+              teams[j].lastrank = lr
+              teams[j].rank = fr
+              if (j === end - 1) {
+                fr = 0
+                lr = 0
+              }
+            }
+          }
+        }
+      }
+      teams.forEach(team => {
+        state.teams.forEach(team2 => {
+          if (team.num === team2.num) {
+            team2 = team
+          }
+        })
+      })
+    },
+    RESET_ANSWERS: (state, count) => {
+      state.teams.forEach(team => {
+        team.answers = team.answers.filter(answer => answer <= count)
+      })
+    },
+    SET_ORDER: (state, order) => {
+      state.order = order
+    }
+  },
+  getters: {
+    GET_TEAMS: state => {
+      console.log(state.order)
+      switch (state.order) {
+        case 'rank':
+          let teams = state.teams.slice()
+          return teams.sort((a, b) => {
+            if (a.rank < b.rank) {
+              return -1
+            }
+            if (a.rank > b.rank) {
+              return 1
+            }
+            return 0
+          })
+        case 'default':
+        default:
+          return state.teams
+      }
+    },
+    RATING: (state) => (question) => {
+      return state.teams.length - state.teams.filter(team => team.answers.includes(question)).length + 1
     }
   }
 }

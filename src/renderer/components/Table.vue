@@ -2,8 +2,8 @@
   <div id="wrapper">
     <main>
           <div class="row valign-wrapper action-wrapper">
-            <div class="col s2"><button class="waves-effect waves-light btn">По местам</button></div>
-            <div class="col s2"><button class="waves-effect red darken-4 btn">По порядку</button></div>
+            <div class="col s2"><button @click="SET_ORDER('rank')" class="waves-effect waves-light btn">По местам</button></div>
+            <div class="col s2"><button @click="SET_ORDER('default')" class="waves-effect red darken-4 btn">По порядку</button></div>
             <div class="col s8"></div>
         </div>
         <div class="row">
@@ -25,8 +25,8 @@
                   <td class="team_name truncate">{{team.name}}</td>
                   <td :title="team.name + ' ' + 'вопрос ' + question" class="question" v-for="question in QUESTION_COUNT" :key="question" @click="toggleAnswer(team, question)"><span>{{team.answers.includes(question) ? '+' : '-'}}</span></td>
                   <td class="sum">{{team.answers.length}}</td>
-                  <td class="rate">{{TEAM_RATING(team.answers)}}</td>
-                  <td class="pos">{{RANK(team.num)}}</td>
+                  <td class="rate">{{team.rating}}</td>
+                  <td class="pos">{{team.rank}} <span v-if="team.lastrank"> - {{team.lastrank}}</span></td>
                 </tr>
               </tbody>
             </table>
@@ -42,7 +42,7 @@
     components: { },
     computed: mapGetters(['GET_TEAMS', 'QUESTION_COUNT', 'RATING', 'TEAM_RATING', 'RANK']),
     methods: {
-      ...mapActions(['TOGGLE_ANSWER', 'SET_RATING']),
+      ...mapActions(['TOGGLE_ANSWER', 'SET_RATING', 'SET_ORDER']),
       toggleAnswer (team, question) {
         this.TOGGLE_ANSWER({num: team.num, question: question})
       }

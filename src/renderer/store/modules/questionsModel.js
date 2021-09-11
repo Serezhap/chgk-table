@@ -39,6 +39,9 @@ export default {
         rating += state.questions[answer - 1].rating
       })
       return rating
+    },
+    GET_QUESTIONS: state => {
+      return state.questions
     }
   }
 }
