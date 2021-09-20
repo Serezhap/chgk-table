@@ -1,7 +1,6 @@
 'use strict'
 import store from '../renderer/store'
 import { app, BrowserWindow, ipcMain } from 'electron'
-const path = require('path')
 const fs = require('fs')
 /**
  * Set `__static` path to static files in production
@@ -25,7 +24,11 @@ function createWindow () {
     useContentSize: true,
     width: 1900,
     minWidth: 1000,
-    minHeight: 600
+    minHeight: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   })
 
   mainWindow.loadURL(winURL)
@@ -48,15 +51,31 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.on('test', function (event, arg) {
-  let p = path.join(__dirname, 'Files')
-  let file = path.join(p, 'test.txt')
-  let contents = 'test'
-  fs.writeFile(file, contents, function (err) {
+ipcMain.on('saveFile', function (event, filePath, content) {
+  let file = filePath
+  if (!file) {
+    file = app.getPath('exe').split('\\').slice(0, -1).join('\\') + '\\game.txt'
+  }
+  console.log(file)
+  console.log(content)
+  fs.writeFileSync(file, content, function (err) {
     if (err) {
       return console.log(err)
     }
-    console.log('The file was saved!')
+  })
+})
+
+ipcMain.on('openFile', function (event) {
+  const { dialog } = require('electron')
+  let path = dialog.showOpenDialog({ properties: ['openFile'] })
+  fs.readFile(path[0], 'utf8', function (err, data) {
+    if (err) return console.log(err)
+    try {
+      let state = JSON.parse(data)
+      event.sender.send('newState', state, path[0])
+    } catch (err) {
+      dialog.showErrorBox('Невозможно загрузить игру', 'Открытый файл не содержит данные об игре')
+    }
   })
 })
 /**

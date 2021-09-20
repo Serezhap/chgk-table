@@ -1,7 +1,7 @@
 <template>
     <main>
           <div class="row valign-wrapper action-wrapper">
-            <div class="col s4"><button class="waves-effect waves-light btn">Загрузить файл</button></div>
+            <div class="col s4"><button @click="openFile" class="waves-effect waves-light btn">Загрузить файл</button></div>
             <div class="col s2 offset-s4 q-count">
               <input :value="QUESTION_COUNT" id="questions-count" max="100" min="0" type="number" class="validate col s4">
               <label class="active col s12" for="questions-count">Количество вопросов</label>
@@ -24,21 +24,28 @@
 </template>
 <script>
   import { mapActions, mapGetters } from 'vuex'
+  import { ipcRenderer } from 'electron'
   export default {
     name: 'Settings',
     components: {},
     computed: mapGetters(['GET_TEAMS', 'QUESTION_COUNT']),
     methods: {
-      ...mapActions(['ADD_TEAM', 'REMOVE_TEAM', 'RENAME_TEAM', 'SET_QUESTIONS']),
+      ...mapActions(['ADD_TEAM', 'REMOVE_TEAM', 'RENAME_TEAM', 'SET_QUESTIONS', 'reset', 'SET_STATE']),
       teamRename (e) {
         this.RENAME_TEAM({num: e.target.id, name: e.target.value})
       },
       generate () {
+        // this.reset()
         this.SET_QUESTIONS(document.getElementById('questions-count').value)
+      },
+      openFile () {
+        ipcRenderer.send('openFile')
       }
     },
     mounted () {
-      console.log(this.$store)
+      ipcRenderer.on('newState', (event, state, path) => {
+        this.SET_STATE({state, path})
+      })
     }
   }
 </script>

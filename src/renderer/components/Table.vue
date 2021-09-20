@@ -37,14 +37,18 @@
 </template>
 <script>
   import { mapActions, mapGetters } from 'vuex'
+  // import { ipcRenderer } from 'electron'
+
   export default {
     name: 'Table',
     components: { },
-    computed: mapGetters(['GET_TEAMS', 'QUESTION_COUNT', 'RATING', 'TEAM_RATING', 'RANK']),
+    computed: mapGetters(['GET_TEAMS', 'QUESTION_COUNT', 'RATING', 'TEAM_RATING', 'GET_STATE']),
     methods: {
       ...mapActions(['TOGGLE_ANSWER', 'SET_RATING', 'SET_ORDER']),
       toggleAnswer (team, question) {
         this.TOGGLE_ANSWER({num: team.num, question: question})
+        // console.log(this.GET_STATE)
+        // ipcRenderer.send('test', this.GET_STATE)
       }
     }
   }
