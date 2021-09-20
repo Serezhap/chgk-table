@@ -48,6 +48,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
+    mainWindow.webContents.send('reset-file')
   }
 })
 
@@ -56,8 +57,6 @@ ipcMain.on('saveFile', function (event, filePath, content) {
   if (!file) {
     file = app.getPath('exe').split('\\').slice(0, -1).join('\\') + '\\game.txt'
   }
-  console.log(file)
-  console.log(content)
   fs.writeFileSync(file, content, function (err) {
     if (err) {
       return console.log(err)
@@ -65,18 +64,26 @@ ipcMain.on('saveFile', function (event, filePath, content) {
   })
 })
 
+ipcMain.on('defaultFile', function (event) {
+  console.log('sas')
+  let file = app.getPath('exe').split('\\').slice(0, -1).join('\\') + '\\game.txt'
+  event.sender.send('filePath', file)
+})
+
 ipcMain.on('openFile', function (event) {
   const { dialog } = require('electron')
   let path = dialog.showOpenDialog({ properties: ['openFile'] })
-  fs.readFile(path[0], 'utf8', function (err, data) {
-    if (err) return console.log(err)
-    try {
-      let state = JSON.parse(data)
-      event.sender.send('newState', state, path[0])
-    } catch (err) {
-      dialog.showErrorBox('Невозможно загрузить игру', 'Открытый файл не содержит данные об игре')
-    }
-  })
+  if (path) {
+    fs.readFile(path[0], 'utf8', function (err, data) {
+      if (err) return console.log(err)
+      try {
+        let state = JSON.parse(data)
+        event.sender.send('newState', state, path[0])
+      } catch (err) {
+        dialog.showErrorBox('Невозможно загрузить игру', 'Открытый файл не содержит данные об игре')
+      }
+    })
+  }
 })
 /**
  * Auto Updater

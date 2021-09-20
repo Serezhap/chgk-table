@@ -39,6 +39,9 @@ export default new Vuex.Store({
     },
     GET_STATE: state => {
       return JSON.stringify(state)
+    },
+    GET_FILE_PATH: state => {
+      return state.filePath
     }
   },
   mutations: {
@@ -182,6 +185,9 @@ export default new Vuex.Store({
       state.questions = newState.questions
       state.order = newState.order
       state.filePath = path
+    },
+    SET_PATH: (state, path) => {
+      state.filePath = path
     }
   },
   actions: {
@@ -211,6 +217,9 @@ export default new Vuex.Store({
     },
     SET_STATE: ({commit}, {state, path}) => {
       commit('SET_STATE', {newState: state, path})
+    },
+    SET_FILE_PATH: ({commit}, path) => {
+      commit('SET_PATH', path)
     }
   },
   modules: {
